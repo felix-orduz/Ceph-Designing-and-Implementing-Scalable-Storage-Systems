@@ -337,7 +337,27 @@ skipping: [ceph-node1]
 Once playbook completes the Ceph cluster installation job and plays the recap with failed=0 , it means ceph-ansible has deployed the Ceph cluster, as shown in the following screenshot:
 
 ```bash
-
+PLAY RECAP ************************************************************************************************************
+ceph-node1                 : ok=126  changed=24    unreachable=0    failed=0   
+[root@ceph-node1 ceph-ansible]# ceph -s
+    cluster 63410f9d-d596-4949-a146-08d5a07bca68
+     health HEALTH_ERR
+            64 pgs are stuck inactive for more than 300 seconds
+            64 pgs stuck inactive
+            64 pgs stuck unclean
+            no osds
+     monmap e2: 1 mons at {ceph-node1=192.16.1.101:6789/0}
+            election epoch 5, quorum 0 ceph-node1
+        mgr no daemons active 
+     osdmap e1: 0 osds: 0 up, 0 in
+            flags sortbitwise,require_jewel_osds,require_kraken_osds
+      pgmap v2: 64 pgs, 1 pools, 0 bytes data, 0 objects
+            0 kB used, 0 kB / 0 kB avail
+                  64 creating
+[root@ceph-node1 ceph-ansible]# ceph osd tree
+ID WEIGHT TYPE NAME    UP/DOWN REWEIGHT PRIMARY-AFFINITY 
+-1      0 root default                                   
+[root@ceph-node1 ceph-ansible]# 
 
 
 ```
@@ -362,18 +382,51 @@ Since we already have one monitor running on ceph-node1 , let's create two more 
 1.  Update the Ceph hosts ceph-node2 and ceph-node3 to /etc/ansible/hosts :
 
 ```bash
+[mons]
+ceph-node1
+ceph-node2
+ceph-node3
+
+[osds]
+ceph-node1
+ceph-node2
+ceph-node3
 
 ```
 
 2.  Verify that Ansible can reach the Ceph hosts mentioned in /etc/ansible/hosts :
 
 ```bash
+[root@ceph-node1 ceph-ansible]# ansible all -m ping
+ceph-node1 | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+ceph-node3 | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+ceph-node2 | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
 
 ```
 
 3.  Run Ansible playbook in order to scale up the Ceph cluster on ceph-node2 and ceph-node3 :
 
 ```bash
+
+[root@ceph-node1 ceph-ansible]# ansible-playbook  site.yml
+
+PLAY [mons,agents,osds,mdss,rgws,nfss,restapis,rbdmirrors,clients,mgrs] ************************************************************************************************************
+
+TASK [check for python2] ************************************************************************************************************
+ok: [ceph-node1]
+
+TASK [install python2 for Debian based systems] ************************************************************************************************************
+skipping: [ceph-node1]
+
 
 
 ```
