@@ -254,7 +254,7 @@ centos_package_dependencies:
   - libselinux-python
 ceph_origin: 'upstream' # or 'distro' or 'local'
 ceph_stable: true # use ceph stable branch
-ceph_satble_release: jewel # ceph stable release
+ceph_stable_release: jewel # ceph stable release
 ceph_stable_redhat_distro: el7
 cephx: true
 monitor_interface: eth1

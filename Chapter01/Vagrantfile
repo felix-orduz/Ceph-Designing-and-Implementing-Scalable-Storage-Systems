@@ -29,9 +29,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 else
                    config.vm.synced_folder ".", "/vagrant"
                 end
-                if Vagrant.has_plugin?("vagrant-cachier")
-                   config.cache.scope = :box
-                end
+              #  if Vagrant.has_plugin?("vagrant-cachier")
+              #     config.cache.scope = :box
+              #  end
                 if Vagrant.has_plugin?("vagrant-vbguest")
                    config.vbguest.auto_update = false
                    config.vbguest.no_install = true
