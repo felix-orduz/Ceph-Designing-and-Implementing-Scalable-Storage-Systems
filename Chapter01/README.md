@@ -198,16 +198,15 @@ Or you can
 ```bash
 $ vagrant ssh ceph-node1
 [vagrant@ceph-node1 ~]# cd /vagrant
-[vagrant@ceph-node1 /vagrant]# sudo -s
-[root@ceph-node1 vagrant]# wget https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
-[root@ceph-node1 vagrant]# rpm -ivh  epel-release-7-11.noarch.rpm
-[root@ceph-node1 vagrant]# rm -rf epel-release-7-11.noarch.rpm
-[root@ceph-node1 vagrant]# yum install -y   git python-pip  ansible==2.6.0.0
+[vagrant@ceph-node1 /vagrant]# sudo -s 
+[root@ceph-node1 vagrant]# rpm -ivh   https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm 
+[root@ceph-node1 vagrant]# yum update -y  
+[root@ceph-node1 vagrant]# yum install -y   git python-pip  ansible
 [root@ceph-node1 vagrant]#  pip   install --upgrade pip   notario netaddr 
 [root@ceph-node1 vagrant]# cd /usr/share
 [root@ceph-node1 share]# git clone https://github.com/ceph/ceph-ansible.git
 [root@ceph-node1 share]# cd ceph-ansible
-[root@ceph-node1 share]# git checkout stable-3.2
+[root@ceph-node1 share]# git checkout stable-4.0
 ```
 
 2.  Update the Ceph hosts to /etc/ansible/hosts :
@@ -243,7 +242,7 @@ ceph-node1 | SUCCESS => {
 
 ```bash
 [root@ceph-node1 ~]# 
-[root@ceph-node1 ~]# ln -s /usr/share/ceph-ansible//group_vars/  /etc/ansible/group_vars
+[root@ceph-node1 ~]# ln -s /usr/share/ceph-ansible/group_vars/  /etc/ansible/group_vars
 [root@ceph-node1 ~]# 
 ```
 
@@ -271,7 +270,7 @@ centos_package_dependencies:
 ceph_origin: repository
 ceph_repository: community
 ceph_stable: true # use ceph stable branch
-ceph_stable_release: luminous  # ceph stable release
+ceph_stable_release: nautilus  # ceph stable release
 ceph_mirror: http://mirrors.aliyun.com/ceph
 ceph_stable_key: http://mirrors.aliyun.com/ceph/keys/release.asc
 ceph_stable_redhat_distro: el7
@@ -302,7 +301,6 @@ osd_mount_options_xfs: noatime,largeio,inode64,swalloc
 
 ```bash
 
-osd_scenario: collocated # 沒有它無法執行
 devices:
   - /dev/sdb
   - /dev/sdc
