@@ -193,6 +193,20 @@ $ vagrant ssh ceph-node1
 [root@ceph-node1 vagrant]# yum install -y  ceph-ansible-2.2.10-38.g7ef908a.el7.noarch.rpm 
 
 ```
+Or you can
+
+```bash
+$ vagrant ssh ceph-node1
+[vagrant@ceph-node1 ~]# cd /vagrant
+[vagrant@ceph-node1 /vagrant]# sudo -s
+[root@ceph-node1 vagrant]# wget https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
+[root@ceph-node1 vagrant]# rpm -ivh  epel-release-7-11.noarch.rpm
+[root@ceph-node1 vagrant]# rm -rf epel-release-7-11.noarch.rpm
+[root@ceph-node1 vagrant]# yum install -y  ansible
+[root@ceph-node1 vagrant]# git clone https://github.com/ceph/ceph-ansible.git
+[root@ceph-node1 vagrant]# cd ceph-ansible
+[root@ceph-node1 vagrant]# git checkout stable-4.0
+```
 
 2.  Update the Ceph hosts to /etc/ansible/hosts :
 
@@ -244,7 +258,6 @@ ceph-node1 | SUCCESS => {
 7.  Define the following configuration options in all.yml for the latest jewel  version on CentOS 7:
 
 ```bash
-
 fetch_directory: ~/ceph-ansible-keys
 centos_package_dependencies:
   - python-pycurl
@@ -252,10 +265,15 @@ centos_package_dependencies:
   - epel-release
   - python-setuptools
   - libselinux-python
-ceph_origin: 'upstream' # or 'distro' or 'local'
+#ceph_origin: 'upstream' # or 'distro' or 'local'
+ceph_origin: repository
+ceph_repository: community
 ceph_stable: true # use ceph stable branch
-ceph_stable_release: jewel # ceph stable release
+ceph_stable_release: nautilus  # ceph stable release
+ceph_mirror: http://mirrors.aliyun.com/ceph
+ceph_stable_key: http://mirrors.aliyun.com/ceph/keys/release.asc
 ceph_stable_redhat_distro: el7
+cpu_arch: x86_64
 cephx: true
 monitor_interface: eth1
 journal_size: 2048 # OSD journal size in MB
@@ -264,8 +282,6 @@ cluster_network: "{{ public_network }}"
 osd_mkfs_type: xfs
 osd_mkfs_options_xfs: -f -i size=2048
 osd_mount_options_xfs: noatime,largeio,inode64,swalloc
-#osd_objectstore: filestore
-
 
 ```
 
@@ -340,24 +356,28 @@ Once playbook completes the Ceph cluster installation job and plays the recap wi
 PLAY RECAP ************************************************************************************************************
 ceph-node1                 : ok=126  changed=24    unreachable=0    failed=0   
 [root@ceph-node1 ceph-ansible]# ceph -s
-    cluster 63410f9d-d596-4949-a146-08d5a07bca68
-     health HEALTH_ERR
-            64 pgs are stuck inactive for more than 300 seconds
-            64 pgs stuck inactive
-            64 pgs stuck unclean
-            no osds
-     monmap e2: 1 mons at {ceph-node1=192.16.1.101:6789/0}
-            election epoch 5, quorum 0 ceph-node1
-        mgr no daemons active 
-     osdmap e1: 0 osds: 0 up, 0 in
-            flags sortbitwise,require_jewel_osds,require_kraken_osds
-      pgmap v2: 64 pgs, 1 pools, 0 bytes data, 0 objects
-            0 kB used, 0 kB / 0 kB avail
-                  64 creating
+  cluster:
+    id:     73ce9919-a43f-4881-b5fe-920973b31334
+    health: HEALTH_OK
+ 
+  services:
+    mon: 1 daemons, quorum ceph-node1 (age 8m)
+    mgr: ceph-node1(active, since 6m)
+    osd: 3 osds: 3 up (since 5m), 3 in (since 5m)
+ 
+  data:
+    pools:   0 pools, 0 pgs
+    objects: 0 objects, 0 B
+    usage:   3.0 GiB used, 54 GiB / 57 GiB avail
+    pgs:     
+ 
 [root@ceph-node1 ceph-ansible]# ceph osd tree
-ID WEIGHT TYPE NAME    UP/DOWN REWEIGHT PRIMARY-AFFINITY 
--1      0 root default                                   
-[root@ceph-node1 ceph-ansible]# 
+ID CLASS WEIGHT  TYPE NAME           STATUS REWEIGHT PRI-AFF 
+-1       0.05576 root default                                
+-3       0.05576     host ceph-node1                         
+ 0   hdd 0.01859         osd.0           up  1.00000 1.00000 
+ 1   hdd 0.01859         osd.1           up  1.00000 1.00000 
+ 2   hdd 0.01859         osd.2           up  1.00000 1.00000 
 
 
 ```
@@ -367,7 +387,8 @@ node1 .
 Here's how you can check the Ceph jewel release installed version. You can run the ceph -v command to check the installed ceph version:
 
 ```bash
-
+[root@ceph-node1 ceph-ansible]# ceph -v
+ceph version 14.2.1 (d555a9489eb35f84f2e1ef49b77e19da9d113972) nautilus (stable)
 
 ```
 
