@@ -522,10 +522,39 @@ ID CLASS WEIGHT  TYPE NAME           STATUS REWEIGHT PRI-AFF
  8   hdd 0.01859         osd.8           up  1.00000 1.00000 
 [root@ceph-node1 ceph-ansible]# ceph osd pool set   rbd  pg_num 128
 Error ENOENT: unrecognized pool 'rbd'
-
-
 ```
 
+So We rebuild osd pool
+
+```bash
+[root@ceph-node1 ~]# ceph osd pool create rbd 8
+pool 'rbd' created
+[root@ceph-node1 ~]# rbd pool init rbd
+[root@ceph-node1 ~]# ceph osd pool set rbd pg_num 128
+set pool 1 pg_num to 128
+[root@ceph-node1 ~]# ceph osd pool set rbd pgp_num 128
+set pool 1 pgp_num to 128
+[root@ceph-node1 ~]# ceph -s
+  cluster:
+    id:     73ce9919-a43f-4881-b5fe-920973b31334
+    health: HEALTH_OK
+ 
+  services:
+    mon: 3 daemons, quorum ceph-node1,ceph-node3,ceph-node2 (age 81m)
+    mgr: ceph-node1(active, since 103m), standbys: ceph-node3, ceph-node2
+    osd: 9 osds: 9 up (since 78m), 9 in (since 78m)
+ 
+  data:
+    pools:   1 pools, 128 pgs
+    objects: 1 objects, 16 B
+    usage:   9.0 GiB used, 162 GiB / 171 GiB avail
+    pgs:     128 active+clean
+ 
+  io:
+    recovery: 2 B/s, 0 objects/s
+ 
+[root@ceph-node1 ~]#
+```
 
 4.   We were getting a too few PGs per OSD warning and because of that, we increased the default RBD pool PGs from 64 to 128. Check the status of your Ceph cluster; at this stage, your cluster is healthy. PGs - placement groups are covered in detail in Chapter 8 , Ceph Under the Hood.
 

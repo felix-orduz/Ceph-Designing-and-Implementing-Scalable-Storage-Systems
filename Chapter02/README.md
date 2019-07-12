@@ -195,24 +195,37 @@ Up to now, we have configured Ceph client, and now we will demonstrate creating 
 1. Create a RADOS Block Device named rbd1 of size 10240 MB:
 ```bash
 [root@client-node1 ~]# rbd create rbd1 --size 10240 --name client.rbd
-rbd: error opening default pool 'rbd'
-Ensure that the default pool has been created or specify an alternate pool name.
-
+[root@client-node1 ~]# 
 ```
 2. There are multiple options that you can use to list RBD images:
 ```
 ## The default pool to store block device images is "rbd",
 
-you can also specify the pool name with the rbd
-command using -p option:
+you can also specify the pool name with the rbd command using -p option:
 # rbd ls --name client.rbd
 # rbd ls -p rbd --name client.rbd
 # rbd list --name client.rbd
 ```
 
-3. Check the details of the RBD image:
-```
-# rbd --image rbd1 info --name client.rbd
+3.  Check the details of the RBD image:
+
+```bash
+[root@client-node1 ~]# rbd --image rbd1 info --name client.rbd
+rbd image 'rbd1':
+	size 10 GiB in 2560 objects
+	order 22 (4 MiB objects)
+	snapshot_count: 0
+	id: 38ed50ee1101
+	block_name_prefix: rbd_data.38ed50ee1101
+	format: 2
+	features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+	op_features: 
+	flags: 
+	create_timestamp: Fri Jul 12 03:56:50 2019
+	access_timestamp: Fri Jul 12 03:56:50 2019
+	modify_timestamp: Fri Jul 12 03:56:50 2019
+[root@client-node1 ~]# 
+
 ```
 
 ## Mapping Ceph Block Device
@@ -224,7 +237,13 @@ Now that we have created a block device on a Ceph cluster, in order to use this 
 1.  Map the block device to the client-node1 :
 
 ```
-# rbd map --image rbd1 --name client.rbd
+[root@client-node1 ~]# rbd map --image rbd1 --name client.rbd
+rbd: sysfs write failed
+RBD image feature set mismatch. You can disable features unsupported by the kernel with "rbd feature disable rbd1 object-map fast-diff deep-flatten".
+In some cases useful info is found in syslog - try "dmesg | tail".
+rbd: map failed: (6) No such device or address
+[root@client-node1 ~]# 
+
 
 ```
 2. With Ceph Jewel the new default format for RBD images is 2 and Ceph Jewel default configuration includes the following default Ceph Block Device features:
@@ -236,25 +255,21 @@ Now that we have created a block device on a Ceph cluster, in order to use this 
 * fast-diff : fast diff calculations (requires object-map ) Using the krbd (kernel rbd) client on client-node1 we will be unable to map the block device image on CentOS kernel 3.10 as this
 kernel does not support object-map , deep-flatten and fast-diff (support was introduced in kernel 4.9). In order to work around this we will disable the unsupported features, there are several options to do this:
 
-    * Disable the unsupported features dynamically (this is
-the option we will be using):
+    * Disable the unsupported features dynamically (this is the option we will be using):
 
-```bash
-rbd feature disable rbd1
-exclusive-lock object-map
-deep-flatten fast-diff
-```
+    ```bash
+    rbd feature disable rbd1 exclusive-lock object-map deep-flatten fast-diff
+    ```
+
     * When creating the RBD image initially utilize the --image-feature layering option with the rbd create command which will only enable the layering feature:
 
-```bash
-  rbd create rbd1 --size 10240
---image-feature layering
---name client.rbd
-```
+    ```bash
+      rbd create rbd1 --size 10240 --image-feature layering --name client.rbd
+    ```
 
     * Disable the feature in the Ceph configuration file:
     ```bash
-    rbd_default_features = 1
+      rbd_default_features = 1
     ```
 
 3. Retry mapping the block device with the unsupported features now disabled:
@@ -271,45 +286,40 @@ rbd showmapped --name client.rbd
 5. To make use of this block device, we should create a filesystem on this and mount it:
 
 ```
-#
-#
-#
-#
-#
-fdisk -l /dev/rbd0
-mkfs.xfs /dev/rbd0
-mkdir /mnt/ceph-disk1
-mount /dev/rbd0 /mnt/ceph-disk1
-df -h /mnt/ceph-disk1
+# fdisk -l /dev/rbd0
+# mkfs.xfs /dev/rbd0
+# mkdir /mnt/ceph-disk1
+# mount /dev/rbd0 /mnt/ceph-disk1
+# df -h /mnt/ceph-disk1
 ```
 
 6. Test the block device by writing data to it:
 
-```
+```bash
 dd if=/dev/zero of=/mnt/ceph-disk1/file1 count=100 bs=1M
 ```
 
-7. To map the block device across reboots, we will need to create and configure a
-services file:
+7. To map the block device across reboots, we will need to create and configure a services file:
     1.  Create a new file in the /usr/local/bin directory for mounting and unmounting and include the  following:
 
     ```bash
-# cd /usr/local/bin
-# vim rbd-mount
+    # cd /usr/local/bin
+    # vim rbd-mount
 
     ```
 
     2.  Save the file and make it executable:
-    ```
+    ```bash
       # sudo chmod +x rbd-mount
     ```
-    This can be done automatically by grabbing the rbd-mount script from the Ceph-Designing-and-Implementing-Scalable-Storage-Systems repository and making it executable:
-    ```
+    This can be done automatically by grabbing the rbd-mount script from the  Ceph-Designing-and-Implementing-Scalable-Storage-Systems repository and making it executable:
+
+    ```bash
     # wget https://raw.githubusercontent.com/PacktPublishing/Ceph-Designing-and-Implementing-Scalable-Storage-Systems/Module_1/master/
     rbdmap -O /usr/local/bin/rbd-mount
     # chmod +x /usr/local/bin/rbd-mount
-
     ```
+    
     3. Go to the systemd directory and create the service file, include the following in the file rbd-mount.service :
 
     ```bash
