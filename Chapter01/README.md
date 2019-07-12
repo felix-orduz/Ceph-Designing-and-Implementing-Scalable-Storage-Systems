@@ -128,10 +128,10 @@ ceph-node2
 
 ```bash
 
-$ firewall-cmd --zone=public --add-port=6789/tcp --permanent
-$ firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
-$ firewall-cmd --reload
-$ firewall-cmd --zone=public --list-all
+firewall-cmd --zone=public --add-port=6789/tcp --permanent
+firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
+firewall-cmd --reload
+firewall-cmd --zone=public --list-all
 
 
 ```
@@ -202,10 +202,12 @@ $ vagrant ssh ceph-node1
 [root@ceph-node1 vagrant]# wget https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
 [root@ceph-node1 vagrant]# rpm -ivh  epel-release-7-11.noarch.rpm
 [root@ceph-node1 vagrant]# rm -rf epel-release-7-11.noarch.rpm
-[root@ceph-node1 vagrant]# yum install -y  ansible
-[root@ceph-node1 vagrant]# git clone https://github.com/ceph/ceph-ansible.git
-[root@ceph-node1 vagrant]# cd ceph-ansible
-[root@ceph-node1 vagrant]# git checkout stable-4.0
+[root@ceph-node1 vagrant]# yum install -y   git python-pip  ansible==2.6.0.0
+[root@ceph-node1 vagrant]#  pip   install --upgrade pip   notario netaddr 
+[root@ceph-node1 vagrant]# cd /usr/share
+[root@ceph-node1 share]# git clone https://github.com/ceph/ceph-ansible.git
+[root@ceph-node1 share]# cd ceph-ansible
+[root@ceph-node1 share]# git checkout stable-3.2
 ```
 
 2.  Update the Ceph hosts to /etc/ansible/hosts :
@@ -269,7 +271,7 @@ centos_package_dependencies:
 ceph_origin: repository
 ceph_repository: community
 ceph_stable: true # use ceph stable branch
-ceph_stable_release: nautilus  # ceph stable release
+ceph_stable_release: luminous  # ceph stable release
 ceph_mirror: http://mirrors.aliyun.com/ceph
 ceph_stable_key: http://mirrors.aliyun.com/ceph/keys/release.asc
 ceph_stable_redhat_distro: el7

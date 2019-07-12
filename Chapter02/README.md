@@ -99,6 +99,16 @@ Install Ceph OSD               : Complete (0:01:01)
 Install Ceph Client            : Complete (0:02:48)
 
 ``` 
+Enable ports that are required by the Ceph MON, OSD, and MDS on the operating system's firewall. Execute the following commands on all VMs:
+
+```bash
+firewall-cmd --zone=public --add-port=6789/tcp --permanent
+firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
+firewall-cmd --reload
+firewall-cmd --zone=public --list-all
+
+```
+
 9.  On client-node1 check and validate that the keyring and ceph.conf file were populated into the /etc/ceph directory by Ansible:
 
 ```bash
@@ -319,7 +329,7 @@ dd if=/dev/zero of=/mnt/ceph-disk1/file1 count=100 bs=1M
     rbdmap -O /usr/local/bin/rbd-mount
     # chmod +x /usr/local/bin/rbd-mount
     ```
-    
+
     3. Go to the systemd directory and create the service file, include the following in the file rbd-mount.service :
 
     ```bash
